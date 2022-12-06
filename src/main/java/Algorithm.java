@@ -88,4 +88,21 @@ class Calculator{
         }
         return sortedMap;
     }
+
+    public HashMap<Document, Double> getPWordListScores(
+            ArrayList<String> wordList,
+            ArrayList<Document> documentsList,
+            Integer k) {
+        HashMap<Document, Double> result = new HashMap<Document, Double>();
+        for (Document d: documentsList){
+            double relevance = 0.0;
+            HashMap<String, Double> TFMap = d.getContingut().getTFMap();
+            for (String word: wordList) {
+                if (IDF.containsKey(word) && TFMap.containsKey(word)) relevance += IDF.get(word) * TFMap.get(word);
+            }
+            result.put(d, relevance);
+        }
+
+        return getKHigherScores(result, k);
+    }
 }
