@@ -28,7 +28,7 @@ class Calculator{
         }
         totalWords = temptCountMap.size();
         for (HashMap.Entry<String, Integer> entry: temptCountMap.entrySet()) {
-            IDF.put(entry.getKey(), (double) entry.getValue() / (double) totalWords);
+            IDF.put(entry.getKey(), Math.log((double) entry.getValue() / (double) totalWords));
         }
     }
 
@@ -41,7 +41,7 @@ class Calculator{
         return result;
     }
 
-    public Double computeSimilarityScores(HashMap<String, Double> TF_IDF, Document d2) {
+    public Double computeCosineSimilarity(HashMap<String, Double> TF_IDF, Document d2) {
         HashMap<String, Double> TF_IDF_2 = computeWordScore(d2);
         Double dotProductResult = dotProduct(TF_IDF, TF_IDF_2);
         Double d1AbsoluteValue = absoluteValue(TF_IDF);

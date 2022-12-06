@@ -86,7 +86,7 @@ public class CtrlDomini {
         HashMap<String, Double> documentScoreVector = c.computeWordScore(d);
         for (Document d2: lb.getDocuments()) {
             if (d != d2) {
-                similarityScores.put(d2, c.computeSimilarityScores(documentScoreVector, d2));
+                similarityScores.put(d2, c.computeCosineSimilarity(documentScoreVector, d2));
             }
         }
         if (k > similarityScores.size()) return similarityScores;

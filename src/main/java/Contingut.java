@@ -49,6 +49,20 @@ public class Contingut {
         return TFMap;
     }
 
+    public boolean hasToken(String token) {
+        for (Frase f: frases) {
+            if (f.hasToken(token)) return true;
+        }
+        return false;
+    }
+
+    public boolean hasSentence(String sentence) {
+        for (Frase f: frases) {
+            if (f.hasSentence(sentence)) return true;
+        }
+        return false;
+    }
+
     private void initMaps() {
         totalWords = 0;
         TFMap = new HashMap<String, Double>();
@@ -61,7 +75,6 @@ public class Contingut {
         }
         updateTFMap();
     }
-
 
     private void updateWordMapFrase(Frase f) {
         for (HashMap.Entry<String, Integer> entry: f.getWordCount().entrySet()){

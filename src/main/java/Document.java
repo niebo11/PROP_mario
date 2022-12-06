@@ -104,4 +104,12 @@ public class Document {
     public String toString() {
         return titol.toString() + ":" + autor.toString();
     }
+
+    public boolean hasToken(String token) {
+        return contingut.hasToken(token);
+    }
+
+    public boolean hasSentence(String sentence) {
+        return contingut.hasSentence(sentence);
+    }
 }

@@ -53,6 +53,18 @@ public class Frase {
         return wordCount;
     }
 
+    public boolean hasToken(String token) {
+        for (String s: words) {
+            if(s.equals(token)) return true;
+        }
+        return false;
+    }
+
+    public boolean hasSentence(String sentence) {
+        String joinFrase = String.join(" ", words);
+        return joinFrase.contains(sentence);
+    }
+
     private void updateCount() {
         wordCount = new HashMap<String, Integer>();
         countWords();

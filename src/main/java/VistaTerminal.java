@@ -20,6 +20,10 @@ public class VistaTerminal {
         }
         Calculator c = new Calculator();
         HashMap<Document, Double> add = cp.getMostSimilarDocuments(d, 1);
+        BooleanParser p = new BooleanParser(d);
+        if (p.parserBooleanExpresion("(  one & conditioner ) | air")) System.out.println("TRUE");
+        if (p.parserBooleanExpresion("({air two} & (never | one | three)) & two | \"aid aim\"")) System.out.println("TRUE");
+        System.out.println(add);
         c.updateIDF(cp.getLlibreria().getDocuments());
     }
 }
