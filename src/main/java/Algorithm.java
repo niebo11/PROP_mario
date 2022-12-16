@@ -6,13 +6,13 @@ import java.util.Collection;
 import java.util.List;
 import java.lang.Math;
 
-class Calculator{
+class Algorithm{
 
     private Integer totalWords;
 
     private HashMap<String, Double> IDF;
 
-    public Calculator() {
+    public Algorithm() {
         totalWords = 0;
         IDF = new HashMap<String, Double>();
     }
@@ -26,9 +26,9 @@ class Calculator{
                 else temptCountMap.put(key, 1);
             }
         }
-        totalWords = temptCountMap.size();
+        int totalDocuments = documentsList.size();
         for (HashMap.Entry<String, Integer> entry: temptCountMap.entrySet()) {
-            IDF.put(entry.getKey(), Math.log((double) entry.getValue() / (double) totalWords));
+            IDF.put(entry.getKey(), Math.log(1 + (double) totalDocuments/entry.getValue()));
         }
     }
 
@@ -43,6 +43,7 @@ class Calculator{
 
     public Double computeCosineSimilarity(HashMap<String, Double> TF_IDF, Document d2) {
         HashMap<String, Double> TF_IDF_2 = computeWordScore(d2);
+        System.out.println(TF_IDF);
         Double dotProductResult = dotProduct(TF_IDF, TF_IDF_2);
         Double d1AbsoluteValue = absoluteValue(TF_IDF);
         Double d2AbsoluteValue = absoluteValue(TF_IDF_2);
@@ -74,15 +75,17 @@ class Calculator{
     public HashMap<Document, Double> getKHigherScores(HashMap<Document, Double> similarityScores, Integer k) {
         List<Double> scores = new ArrayList<>(similarityScores.values());
         Collections.sort(scores, Collections.reverseOrder());
+        System.out.println(scores);
         int count = 0;
         HashMap<Document, Double> sortedMap = new HashMap<Document, Double>();
-        for (double d: scores) {
+        for (double d: scores) { //FIX SAME SCORES
             for(HashMap.Entry<Document, Double> entry: similarityScores.entrySet()){
                 if (entry.getValue().equals(d)) {
                     sortedMap.put(entry.getKey(), entry.getValue());
                     ++count;
                     break;
                 }
+                System.out.println(count);
             }
             if (k == count) break;
         }
@@ -104,5 +107,21 @@ class Calculator{
         }
 
         return getKHigherScores(result, k);
+    }
+
+    public Integer getTotalWords() {
+        return totalWords;
+    }
+
+    public HashMap<String, Double> getIDF() {
+        return IDF;
+    }
+
+    public void setIDF(HashMap<String, Double> IDF) {
+        this.IDF = IDF;
+    }
+
+    public void setTotalWords(Integer totalWords) {
+        this.totalWords = totalWords;
     }
 }

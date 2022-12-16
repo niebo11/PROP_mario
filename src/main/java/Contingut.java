@@ -16,6 +16,16 @@ public class Contingut {
         initMaps();
     }
 
+    public Contingut(String text){
+        String[] items = text.split("\n");
+        frases = new ArrayList<>();
+        for (String frase: items) {
+            frases.add(new Frase(frase));
+        }
+        initMaps();
+        updateWordMap();
+    }
+
     public Contingut(ArrayList<Frase> frases) {
         this.frases = frases;
         initMaps();
@@ -26,8 +36,20 @@ public class Contingut {
         return frases;
     }
 
-    public void setContinguts(ArrayList<Frase> continguts) {
+    public void setContingut(ArrayList<Frase> continguts) {
         this.frases = frases;
+        initMaps();
+        updateWordMap();
+    }
+
+    public void setContingut(String s) {
+        String[] stringFrase = s.split("\n");
+        this.frases = new ArrayList<Frase>(stringFrase.length);
+        for (int i = 0; i < stringFrase.length; ++i){
+            System.out.println(stringFrase[i]);
+            this.frases.add(i, new Frase(stringFrase[i]));
+        }
+        System.out.println(this.frases);
         initMaps();
         updateWordMap();
     }
@@ -49,14 +71,22 @@ public class Contingut {
         return TFMap;
     }
 
-    public boolean hasToken(String token) {
+    public Boolean hasToken(String token) {
         for (Frase f: frases) {
             if (f.hasToken(token)) return true;
         }
         return false;
     }
 
-    public boolean hasSentence(String sentence) {
+    public Boolean equalsString(String s) {
+        String[] frases = new String[this.frases.size()];
+        for (int i = 0; i < this.frases.size(); ++i) {
+            frases[i] = this.frases.get(i).toString();
+        }
+        return s.equals(String.join("\n", frases));
+    }
+
+    public Boolean hasSentence(String sentence) {
         for (Frase f: frases) {
             if (f.hasSentence(sentence)) return true;
         }
@@ -93,5 +123,14 @@ public class Contingut {
         for(HashMap.Entry<String, Integer> entry: wordMap.entrySet()) {
             TFMap.put(entry.getKey(), (double) entry.getValue()/totalWords);
         }
+    }
+
+    @Override
+    public String toString(){
+        String[] frases = new String[this.frases.size()];
+        for (int i = 0; i < this.frases.size(); ++i) {
+            frases[i] = this.frases.get(i).toString();
+        }
+        return String.join("\n", frases);
     }
 }

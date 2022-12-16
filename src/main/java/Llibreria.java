@@ -1,3 +1,4 @@
+import javax.print.Doc;
 import java.util.HashMap;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -14,18 +15,37 @@ public class Llibreria {
         documents = new ArrayList<Document>();
     }
 
+    public void setDocuments(ArrayList<Document> documents) {
+        this.documents = documents;
+    }
+
+    public void setAutors(ArrayList<Autor> autors) {
+        this.autors = autors;
+    }
+
     public void addDocument(Document d) {
         documents.add(d);
         Frase name = d.getAutor();
         Autor autor = getAutor(name);
         if (autor != null) {
             autor.addDocument(d);
-        }
-        else{
+        } else {
             autor = new Autor(name);
             autor.addDocument(d);
             autors.add(autor);
         }
+    }
+
+    public void setContent(Document d, String s) {
+        for (Document d2 : documents) {
+            if (d.equals(d2)) {
+                d.setContingut(s);
+            }
+        }
+    }
+
+    public boolean hasDocument(Document d){
+        return documents.contains(d);
     }
 
     public ArrayList<Document> getDocuments() {
@@ -37,7 +57,7 @@ public class Llibreria {
     }
 
     public void removeDocument(Document d) {
-        if (!documents.contains(d)) {
+        if (!hasDocument(d)) {
             throw new java.lang.IllegalArgumentException("El document no existeix a la llibreria");
         }
         documents.remove(d);
@@ -48,14 +68,25 @@ public class Llibreria {
     }
 
     public void changeTitolDocument(Document d, Frase name) {
-        if (!documents.contains(d)) {
+        if (!hasDocument(d)) {
             throw new java.lang.IllegalArgumentException("El document no existeix a la llibreria");
         }
         d.setTitol(name);
     }
 
+    public Document getDocumentFromNameAutor(String name, String autor) {
+        Document fake = new Document(
+                new Frase(name),
+                new Frase(autor)
+        );
+        for (Document d2: documents) {
+            if (fake.equals(d2)) return d2;
+        }
+        return fake;
+    }
+
     public void changeAutorDocument(Document d, Frase name) {
-        if (!documents.contains(d)) {
+        if (!hasDocument(d)) {
             throw new java.lang.IllegalArgumentException("El document no existeix a la llibreria");
         }
         Autor autor = getAutor(name);
@@ -102,4 +133,8 @@ public class Llibreria {
     public String toString() {
         return documents.stream().map(document->document.toString()).collect(Collectors.toList()).toString();
     }
+
+    public Integer getNumberDocuments() { return documents.size(); }
+
+    public Integer getNumberAutors() { return autors.size(); }
 }

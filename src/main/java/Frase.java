@@ -40,8 +40,10 @@ public class Frase {
         return words.isEmpty();
     }
 
-    public boolean equals(Frase f) {
-        return String.join(" ", f.getWords()).equals(String.join(" ", words));
+    @Override
+    public boolean equals(Object o) {
+        Frase aux = (Frase) o;
+        return String.join(" ", aux.getWords()).equals(String.join(" ", words));
     }
 
     @Override

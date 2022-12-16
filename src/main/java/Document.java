@@ -96,13 +96,17 @@ public class Document {
         this.contingut = contingut;
     }
 
+    public void setContingut(String contingut) {
+        this.contingut.setContingut(contingut);
+    }
+
     public Contingut getContingut() {
         return contingut;
     }
 
     @Override
     public String toString() {
-        return titol.toString() + ":" + autor.toString();
+        return titol.toString();
     }
 
     public boolean hasToken(String token) {
@@ -111,5 +115,11 @@ public class Document {
 
     public boolean hasSentence(String sentence) {
         return contingut.hasSentence(sentence);
+    }
+
+    @Override
+    public boolean equals(Object o){
+        Document aux = (Document) o;
+        return (aux.getAutor().equals(this.autor) && aux.getTitol().equals(this.titol));
     }
 }
