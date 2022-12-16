@@ -265,8 +265,7 @@ public class VistaLlibreria extends JPanel implements LangListener{
         @Override
         public void actionPerformed(ActionEvent actionEvent) {
             JButton add = (JButton) actionEvent.getSource();
-            JPanel jp = (JPanel) add.getParent();
-            VistaLlibreria frame = (VistaLlibreria) jp.getParent(); //TODO
+            JFrame frame = (JFrame) SwingUtilities.getRoot(add); //TODO
             VistaDocument vd = new VistaDocument();
             JOptionPane optionPane = new JOptionPane(
                     vd,
@@ -274,7 +273,7 @@ public class VistaLlibreria extends JPanel implements LangListener{
                     JOptionPane.OK_CANCEL_OPTION
             );
 
-            JDialog dialog = new JDialog(frame.getMainFrame(),
+            JDialog dialog = new JDialog(frame,
                     "Add Document",
                     true);
             dialog.setContentPane(optionPane);
