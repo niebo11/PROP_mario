@@ -34,6 +34,7 @@ public class MainWindow extends JFrame implements LangListener, ActionListener{
     private VistaLlibreria tableLlibreria;
     private VistaAutors tableAutors;
     private VistaRelevance vistaRelevance;
+    private VistaRelevanceWords vistaRelevanceWords;
 
     public MainWindow (CtrlPresentacio ctrl) {
         super("Library manager");
@@ -41,6 +42,7 @@ public class MainWindow extends JFrame implements LangListener, ActionListener{
         tableLlibreria = new VistaLlibreria(this.ctrl, this);
         tableAutors = new VistaAutors(this.ctrl);
         vistaRelevance = new VistaRelevance(this.ctrl);
+        vistaRelevanceWords = new VistaRelevanceWords(this.ctrl);
         initializeComponents();
         assignListenersComponents();
         hacerVisible();
@@ -107,7 +109,7 @@ public class MainWindow extends JFrame implements LangListener, ActionListener{
         updateLlibreria(false);
         updateAutors(false);
         // SIze
-        this.setMinimumSize(new Dimension(700,400));
+        this.setMinimumSize(new Dimension(800,500));
         this.setPreferredSize(this.getMinimumSize());
         this.setResizable(true);
         // Position
@@ -140,6 +142,7 @@ public class MainWindow extends JFrame implements LangListener, ActionListener{
         tabbedPanel.add("Library", tableLlibreria);
         tabbedPanel.add("Authors", tableAutors);
         tabbedPanel.add("Relevance", vistaRelevance);
+        tabbedPanel.add("WordsRelevance", vistaRelevanceWords);
     }
 
     private void initPanelContent() {

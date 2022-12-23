@@ -1,8 +1,12 @@
+import org.xml.sax.SAXException;
+
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import javax.swing.*;
+import javax.xml.parsers.ParserConfigurationException;
+
 public class CtrlPresentacio {
 
     private CtrlDomini cd;
@@ -17,36 +21,36 @@ public class CtrlPresentacio {
         return cd.getDocumentFromNameAutor(name, autor);
     }
 
-    public void importDocumentPlainText(String path) throws IOException {
-        cd.importDocumentPlainText(path);
+    public void importDocument(String path) throws IOException, ParserConfigurationException, SAXException {
+        cd.importDocument(path);
     }
 
     public Llibreria getLlibreria(){
         return cd.getLlibreria();
     }
 
-    public void addDocument(Document d) {
-        cd.addDocument(d);
+    public void addDocument(String titol, String autor, String content) {
+        cd.addDocument(titol, autor, content);
     }
 
-    public Boolean parserExpression(String expression, Document d) {
-        return cd.parserExpression(expression, d);
+    public Boolean parserExpression(String titol, String autor, String expression) {
+        return cd.parserExpression(titol, autor, expression);
     }
 
-    public boolean hasDocument(Document d) {
-        return cd.hasDocument(d);
+    public boolean hasDocument(String titol, String autor) {
+        return cd.hasDocument(titol, autor);
     }
 
-    public void removeDocument(Document d) {
-        cd.removeDocument(d);
+    public void removeDocument(String titol, String autor) {
+        cd.removeDocument(titol, autor);
     }
 
-    public void changeAutorDocument(Document d, Frase name) {
-        cd.changeAutorDocument(d, name);
+    public void changeAutorDocument(String titol, String autor, String newAutor) {
+        cd.changeAutorDocument(titol, autor, newAutor);
     }
 
-    public void changeTitolDocument(Document d, Frase name) {
-        cd.changeTitolDocument(d, name);
+    public void changeTitolDocument(String titol, String autor, String newTitol) {
+        cd.changeTitolDocument(titol, autor, newTitol);
     }
 
     public ArrayList<Document> getDocumentFromAutor(Frase name) {
@@ -61,34 +65,44 @@ public class CtrlPresentacio {
         return cd.getMostSimilarDocuments(d, k);
     }
 
-    public Object[][] getDocumentosData(){
-        ArrayList<Document> documents = cd.getDocuments();
-        Object[][] d = new Object[documents.size()][2];
-        for (int i = 0; i < documents.size(); ++i){
-            d[i][0] = documents.get(i).getTitol();
-            d[i][1] = documents.get(i).getAutor();
-        }
-        return d;
+    public String[][] getMostSimilarDocument(String titol, String autor, Integer k) {
+        return cd.getKSimilarDocs(titol, autor, k);
     }
 
-    public Object[][] getAutorsData() {
-        ArrayList<Autor> autors = cd.getAutors();
-        Object[][] d = new Object[autors.size()][3];
-        for (int i = 0; i < autors.size(); ++i) {
-            Autor a = autors.get(i);
-            d[i][0] = a.getName().toString();
-            d[i][1] = Integer.toString(a.getDocumentList().size());
-            d[i][2] = a.getDocumentList().toString();
-        }
-        return d;
+    public String[][] getPwords(String words, Integer k) {
+        return cd.getPwords(words, k);
     }
 
-    public void setContent(Document d, String s) { cd.setContent(d, s); }
+    public Autor getAutor(String name) {
+        return cd.getAutor(name);
+    }
+
+    public String[][] getDocumentosData(){
+        return cd.getDocumentsData();
+    }
+
+    public String[][] getAutorsData() {
+        return cd.getAutorsData();
+    }
+
+    public void setContent(String titol, String autor, String s) { cd.setContent(titol, autor, s); }
+
+    public Boolean saveDocument(String titol, String autor) throws Exception {
+        return cd.saveDocument(titol, autor);
+    }
+
+    public Boolean saveDocument(String titol, String autor, String path) throws Exception {
+        return cd.saveDocument(titol, autor, path);
+    }
 
     public void errorManagement(String s){
         JOptionPane.showMessageDialog(new JFrame("error"),
                 s, "error", JOptionPane.ERROR_MESSAGE);
 
+    }
+
+    public Boolean hasEqualContent(String titol, String autor, String content) {
+        return cd.hasEqualContent(titol, autor, content);
     }
 
     public void save(String path) {
@@ -117,5 +131,11 @@ public class CtrlPresentacio {
             E.printStackTrace();
         }
     }
+
+    public String[] getDocumentListFromAutor(String autor){
+        return cd.getDocumentListFromAutor(autor);
+    }
+
+    public String[] getSearches() {return cd.getSearches();}
 
 }

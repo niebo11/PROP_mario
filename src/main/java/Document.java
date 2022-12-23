@@ -9,8 +9,8 @@ public class Document {
     // Autor is the autor of the document
     private Frase autor;
 
-    // EsPublic returns if the document is public or not, by default false
-    private boolean esPublic;
+    //
+    private String path;
 
     // Editable returns true if the document is editable false otherwise, by default true
     private boolean editable;
@@ -32,7 +32,17 @@ public class Document {
     public Document(Frase titol, Frase autor) {
         this.titol = titol;
         this.autor = autor;
-        esPublic = false;
+        path = null;
+        editable = false;
+        this.codi = "";
+        dataAlta = new Date();
+        contingut = new Contingut();
+    }
+
+    public Document(Frase titol, Frase autor, String path) {
+        this.titol = titol;
+        this.autor = autor;
+        this.path = path;
         editable = false;
         this.codi = "";
         dataAlta = new Date();
@@ -42,7 +52,17 @@ public class Document {
     public Document(Frase titol, Frase autor, Contingut c) {
         this.titol = titol;
         this.autor = autor;
-        esPublic = false;
+        path = null;
+        editable = false;
+        this.codi = "";
+        dataAlta = new Date();
+        contingut = c;
+    }
+
+    public Document(Frase titol, Frase autor, Contingut c, String path) {
+        this.titol = titol;
+        this.autor = autor;
+        this.path = path;
         editable = false;
         this.codi = "";
         dataAlta = new Date();
@@ -51,6 +71,14 @@ public class Document {
 
     public Frase getTitol() {
         return titol;
+    }
+
+    public String getPath() {
+        return path;
+    }
+
+    public void setPath(String path) {
+        this.path = path;
     }
 
     public void setTitol(Frase titol) {
@@ -73,15 +101,6 @@ public class Document {
 
     public void removeCodi() {
         codi = "";
-    }
-
-    public void setEsPublic() {
-        esPublic = true;
-    }
-
-    public void DocumentPrivat() {
-        if (editable) editable = false;
-        esPublic = false;
     }
 
     public void setEditable() {

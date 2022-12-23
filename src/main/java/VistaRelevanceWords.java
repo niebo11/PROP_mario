@@ -6,18 +6,17 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
-import java.util.HashMap;
 
-public class VistaRelevance extends JPanel
+public class VistaRelevanceWords extends JPanel
 {
     private CtrlPresentacio ctrl;
     private JTextField k;
-    private JComboBox autor;
+    private JTextField words;
     private JComboBox document;
     private JButton search;
     private GridBagConstraints c;
     private JTable table;
-    public VistaRelevance(CtrlPresentacio ctrl) {
+    public VistaRelevanceWords(CtrlPresentacio ctrl) {
         this.ctrl = ctrl;
         initVistaRelevance();
     }
@@ -27,7 +26,6 @@ public class VistaRelevance extends JPanel
         setLayout(new GridBagLayout());
         initKTextField();
         initAutorComboBox();
-        initDocument();
         initButton();
         initTable();
     }
@@ -48,68 +46,18 @@ public class VistaRelevance extends JPanel
     private void initAutorComboBox() {
         c.gridx = 1;
         c.ipadx = 0;
-        c.gridwidth = java.awt.GridBagConstraints.RELATIVE;
-        JPanel autorPanel = new JPanel(new BorderLayout());
-        JLabel label = new JLabel("Author:");
-        autorPanel.add(label, BorderLayout.WEST);
-        this.autor = new JComboBox();
-        this.autor.setPreferredSize(new Dimension(200,20));
-        this.autor.setPrototypeDisplayValue("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
-        this.autor.addPopupMenuListener(new PopupMenuListener() {
-            @Override
-            public void popupMenuWillBecomeVisible(PopupMenuEvent e)
-            {
-                JComboBox comboBox = (JComboBox) e.getSource();
-                Object popup = comboBox.getUI().getAccessibleChild(comboBox, 0);
-                Component c = ((Container) popup).getComponent(0);
-                if (c instanceof JScrollPane)
-                {
-                    JScrollPane scrollpane = (JScrollPane) c;
-                    JScrollBar scrollBar = scrollpane.getVerticalScrollBar();
-                    Dimension scrollBarDim = new Dimension(500, scrollBar
-                            .getPreferredSize().height);
-                    scrollBar.setPreferredSize(scrollBarDim);
-                }
-            }
-
-            @Override
-            public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
-
-            }
-
-            @Override
-            public void popupMenuCanceled(PopupMenuEvent e) {
-
-            }
-        });
-        this.autor.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
-                JComboBox comboBox = (JComboBox) event.getSource();
-                String autorName = comboBox.getSelectedItem().toString();
-                ArrayList<Document> documents = ctrl.getDocumentFromAutor(new Frase(autorName));
-                String[] documentName = new String[documents.size()];
-                for (int i = 0; i < documents.size(); ++i) {
-                    documentName[i] = documents.get(i).toString();
-                }
-                document.setModel(new SortedComboBoxModel<String>(documentName));
-            }
-        });
-        autorPanel.add(this.autor, BorderLayout.CENTER);
-        this.add(autorPanel, c);
+        c.ipadx = 70;
+        c.insets = new Insets(4, 4, 4, 10);
+        JPanel wordsPanel = new JPanel(new BorderLayout());
+        JLabel label = new JLabel("Words");
+        wordsPanel.add(label, BorderLayout.WEST);
+        words = new JTextField(15);
+        wordsPanel.add(words, BorderLayout.CENTER);
+        this.add(wordsPanel, c);
     }
 
-    private void initDocument() {
-        c.gridx = 2;
-        c.ipadx = 60;
-        JPanel documentPanel = new JPanel(new BorderLayout());
-        JLabel label = new JLabel("Document:");
-        documentPanel.add(label, BorderLayout.WEST);
-        this.document = new JComboBox();
-        documentPanel.add(this.document, BorderLayout.CENTER);
-        this.add(documentPanel, c);
-    }
 
-    private void initButton(){
+    private void initButton() {
         c.gridx = 1;
         c.gridy = 1;
         c.insets = new Insets(8, 0,8 ,0);
@@ -122,23 +70,9 @@ public class VistaRelevance extends JPanel
                         throw new NumberFormatException("nope");
                     } else {
                         int number_doc = Integer.parseInt(k.getText());
-                        /*try {
-                            if (autor.getSelectedItem() == null || document.getSelectedItem() == null) {
-                                throw new Exception("invalid input");
-                            } else {*/
-                            Document to_search = ctrl.getDocumentFromNameAutor(
-                                    document.getSelectedItem().toString(),
-                                    autor.getSelectedItem().toString()
-                            );
-                            String[][] docs = ctrl.getMostSimilarDocument(
-                                    document.getSelectedItem().toString(),
-                                    autor.getSelectedItem().toString(),
-                                    Integer.parseInt(k.getText()));
-                            updateTableValues(docs);
-                        /*    }
-                        } catch (Exception E) {
-
-                        }*/
+                        String words_to_search = words.getText();
+                        String[][] new_values = ctrl.getPwords(words_to_search, number_doc);
+                        updateTableValues(new_values);
                     }
                 } catch (NumberFormatException E) {
                     ctrl.errorManagement("K is not a valid integer.");
@@ -215,28 +149,6 @@ public class VistaRelevance extends JPanel
                 rowHeight = Math.max(rowHeight, comp.getPreferredSize().height);
             }
             table.setRowHeight(row, rowHeight);
-        }
-    }
-
-    public void updateAutorList(){
-        Object[][] autors = ctrl.getAutorsData();
-        String[] autorsName = new String[autors.length];
-        for(int i = 0; i < autors.length; ++i) {
-            autorsName[i] = (String) autors[i][0];
-        }
-        this.autor.setModel(new SortedComboBoxModel<String>(autorsName));
-        updateDocumentList();
-    }
-
-    public void updateDocumentList() {
-        if (autor.getSelectedItem() != null) {
-            String autorName = autor.getSelectedItem().toString();
-            ArrayList<Document> documents = ctrl.getDocumentFromAutor(new Frase(autorName));
-            String[] documentName = new String[documents.size()];
-            for (int i = 0; i < documents.size(); ++i) {
-                documentName[i] = documents.get(i).toString();
-            }
-            document.setModel(new SortedComboBoxModel<String>(documentName));
         }
     }
 }

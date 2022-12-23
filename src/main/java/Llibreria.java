@@ -23,6 +23,13 @@ public class Llibreria {
         this.autors = autors;
     }
 
+    public Autor getAutor(String name) {
+        for (Autor a: autors) {
+            if (a.getName().toString().equals(name)) {return a;}
+        }
+        return null;
+    }
+
     public void addDocument(Document d) {
         documents.add(d);
         Frase name = d.getAutor();
@@ -82,7 +89,7 @@ public class Llibreria {
         for (Document d2: documents) {
             if (fake.equals(d2)) return d2;
         }
-        return fake;
+        return null;
     }
 
     public void changeAutorDocument(Document d, Frase name) {

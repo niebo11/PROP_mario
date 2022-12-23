@@ -1,6 +1,7 @@
 import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
+import javax.swing.plaf.basic.BasicComboBoxEditor;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
@@ -17,9 +18,11 @@ public class VistaLlibreria extends JPanel implements LangListener{
     private CtrlPresentacio ctrl;
     private JTable table;
     private JFrame mainFrame;
-    private JPanel buttonPanel;
+    private JPanel buttonPanel, searchPanel;
+    private JButton searchButton;
     private JPopupMenu popup;
-    private JTextField Filtro = new JTextField(20);
+    private JComboBox Filtro;
+    private JTextField filtroText = new JTextField(20);
     private JComboBox filterType;
     private VistaMainDocument documentDialog;
     private String expression = null;
@@ -47,6 +50,23 @@ public class VistaLlibreria extends JPanel implements LangListener{
     private void initFilterType(){
         String[] types = {"Document name", "Author", "Content"};
         filterType = new JComboBox(types);
+        filterType.addActionListener(
+                new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        JComboBox type = (JComboBox) e.getSource();
+                        if (type.getSelectedItem().toString() != "Content") {
+                            searchPanel.remove(Filtro);
+                            searchPanel.add(filtroText, BorderLayout.CENTER);
+                        }
+                        else {
+                            searchPanel.remove(filtroText);
+                            searchPanel.add(Filtro, BorderLayout.CENTER);
+                        }
+                        searchPanel.repaint();
+                    }
+                }
+        );
     }
 
     private void initTable() {
@@ -73,13 +93,17 @@ public class VistaLlibreria extends JPanel implements LangListener{
     }
 
     private JPanel initSearch() {
+        Filtro = new JComboBox();
+        Filtro.setEditable(true);
         TableRowSorter<TableModel> rowSorter = new TableRowSorter<>(table.getModel());
         table.setRowSorter(rowSorter);
-        JPanel searchPanel = new JPanel(new BorderLayout());
-        searchPanel.add(new JLabel(Lang.getString("busca")),
-                BorderLayout.WEST);
-        searchPanel.add(Filtro, BorderLayout.CENTER);
-        searchPanel.add(filterType, BorderLayout.EAST);
+        searchPanel = new JPanel(new BorderLayout());
+        searchPanel.add(filtroText, BorderLayout.CENTER);
+        JPanel confsPanel = new JPanel(new GridLayout());
+        searchButton = new JButton("Search");
+        confsPanel.add(searchButton);
+        confsPanel.add(filterType);
+        searchPanel.add(confsPanel, BorderLayout.EAST);
         JPanel actionsPanel = new JPanel(new CardLayout());
         actionsPanel.add(searchPanel);
         actionsPanel.setVisible(false);
@@ -95,46 +119,44 @@ public class VistaLlibreria extends JPanel implements LangListener{
             public boolean include(Entry<? extends Object, ? extends Object> entry) {
                 String name = entry.getStringValue(0);
                 String autor = entry.getStringValue(1);
-                Document to_search = ctrl.getDocumentFromNameAutor(name, autor);
-                return ctrl.parserExpression(expression, to_search);
+                return ctrl.parserExpression(name, autor, expression);
             }
         };
 
-        Filtro.getDocument().addDocumentListener(new DocumentListener(){
-
+        searchButton.addActionListener(new ActionListener() {
             @Override
-            public void insertUpdate(DocumentEvent e) {
-                expression = Filtro.getText();
+            public void actionPerformed(ActionEvent e) {
+
                 String type = (String) filterType.getSelectedItem();
-                if (expression.trim().length() == 0) { rowSorter.setRowFilter(null); }
-                else if (type.equals("Content")) {
+                if (type.equals("Content")) {
+                    expression = Filtro.getEditor().getItem().toString();
+                    if (expression.trim().length() == 0) { rowSorter.setRowFilter(null); }
                     rowSorter.setRowFilter(booleanFilter);
+                    updateFiltro();
                 }
-                else { rowSorter.setRowFilter(RowFilter.regexFilter("(?i)" + expression,0)); }
-            }
-
-            @Override
-            public void removeUpdate(DocumentEvent e) {
-                expression = Filtro.getText();
-                String type = (String) filterType.getSelectedItem();
-                if (expression.trim().length() == 0) { rowSorter.setRowFilter(null); }
-                else if (type.equals("Content")) {
-                    rowSorter.setRowFilter(booleanFilter);
+                else if (type.equals("Author")) {
+                    expression = filtroText.getText();
+                    if (expression.trim().length() == 0) { rowSorter.setRowFilter(null); }
+                    rowSorter.setRowFilter(RowFilter.regexFilter("(?i)" + expression,1));
                 }
-                else { rowSorter.setRowFilter(RowFilter.regexFilter("(?i)" + expression,0)); }
+                else {
+                    expression = filtroText.getText();
+                    if (expression.trim().length() == 0) { rowSorter.setRowFilter(null); }
+                    rowSorter.setRowFilter(RowFilter.regexFilter("(?i)" + expression,0));
+                }
             }
-
-            @Override
-            public void changedUpdate(DocumentEvent e) {
-                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-
-            }
-
         });
 
         this.getInputMap(WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_F, InputEvent.CTRL_MASK),"search");
         this.getActionMap().put("search",SEARCH);
         return actionsPanel;
+    }
+
+    private void updateFiltro() {
+        String[] searches = ctrl.getSearches();
+        String currentValue = Filtro.getEditor().getItem().toString();
+        Filtro.setModel(new DefaultComboBoxModel(searches));
+        Filtro.setSelectedItem(currentValue);
     }
 
     private void initPopup() {
@@ -166,7 +188,6 @@ public class VistaLlibreria extends JPanel implements LangListener{
                     if(row != -1) {
                         String name = (String) table.getValueAt(row, 0).toString();
                         String autor = (String) table.getValueAt(row, 1).toString();
-                        Document d = ctrl.getDocumentFromNameAutor(name, autor);
                         if (!documentDialog.isActive()){
                             documentDialog = new VistaMainDocument(ctrl);
                             documentDialog.addWindowListener(new java.awt.event.WindowAdapter() {
@@ -175,7 +196,7 @@ public class VistaLlibreria extends JPanel implements LangListener{
                                     vl.updateTable(true);
                                 }
                             });
-                            documentDialog.setDocument(d);
+                            documentDialog.setDocument(name, autor);
                         }
                     }
                 }
@@ -250,11 +271,7 @@ public class VistaLlibreria extends JPanel implements LangListener{
                 for(int r : row) {
                     String name = table.getValueAt(r,0).toString();
                     String autor = table.getValueAt(r, 1).toString();
-                    Document to_remove = new Document(
-                            new Frase(name),
-                            new Frase(autor)
-                    );
-                    ctrl.removeDocument(to_remove);
+                    ctrl.removeDocument(name, autor);
                 }
             }
             updateTable(true);
@@ -294,15 +311,12 @@ public class VistaLlibreria extends JPanel implements LangListener{
 
             int result = ((Integer)optionPane.getValue()).intValue();
             if (result == 0) {
-                Contingut c = new Contingut(vd.getContent());
-                Document documentToAdd = new Document(
-                        new Frase(vd.getName()),
-                        new Frase(vd.getAuthor()),
-                        c
-                );
+                String titol = vd.getName();
+                String autor = vd.getAuthor();
+                String content = vd.getContent();
                 try{
-                    if (ctrl.hasDocument(documentToAdd)) { throw new DuplicateFormatFlagsException("duplicate");}
-                    else { ctrl.addDocument(documentToAdd); }
+                    if (ctrl.hasDocument(titol, autor)) { throw new DuplicateFormatFlagsException("duplicate");}
+                    else { ctrl.addDocument(titol, autor, content); }
                 } catch (DuplicateFormatFlagsException E) {ctrl.errorManagement("duplicate");}
             }
             updateTable(true);
@@ -326,7 +340,7 @@ public class VistaLlibreria extends JPanel implements LangListener{
                     for (File f: files) {
                         String path = f.getPath();
                         try {
-                            ctrl.importDocumentPlainText(path);
+                            ctrl.importDocument(path);
                         } catch (Exception ex) {
                             String errorMessage = path + " failed to import: document exists";
                             ctrl.errorManagement(errorMessage);

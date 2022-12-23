@@ -21,8 +21,14 @@ public class Frase {
     }
 
     public Frase(String frase) {
+        words = new ArrayList<String>();
         if (frase != null) {
-            words = new ArrayList<String>(Arrays.asList(frase.split(" ")));
+            ArrayList<String> tempt = new ArrayList<>(Arrays.asList(frase.split(" ")));
+            for (String to_add: tempt) {
+                if (!to_add.equals("")) {
+                    words.add(to_add);
+                }
+            }
             updateCount();
         }
     }

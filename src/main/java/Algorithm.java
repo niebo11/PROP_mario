@@ -1,3 +1,4 @@
+import javax.print.Doc;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Set;
@@ -75,32 +76,31 @@ class Algorithm{
     public HashMap<Document, Double> getKHigherScores(HashMap<Document, Double> similarityScores, Integer k) {
         List<Double> scores = new ArrayList<>(similarityScores.values());
         Collections.sort(scores, Collections.reverseOrder());
-        System.out.println(scores);
         int count = 0;
         HashMap<Document, Double> sortedMap = new HashMap<Document, Double>();
         for (double d: scores) { //FIX SAME SCORES
+            Document chosen = null;
             for(HashMap.Entry<Document, Double> entry: similarityScores.entrySet()){
                 if (entry.getValue().equals(d)) {
                     sortedMap.put(entry.getKey(), entry.getValue());
+                    chosen = entry.getKey();
                     ++count;
                     break;
                 }
-                System.out.println(count);
             }
+            similarityScores.remove(chosen);
             if (k == count) break;
         }
         return sortedMap;
     }
 
-    public HashMap<Document, Double> getPWordListScores(
-            ArrayList<String> wordList,
-            ArrayList<Document> documentsList,
-            Integer k) {
+    public HashMap<Document, Double> getDocumentsByWords(ArrayList<Document> docList, String s, int k){
+        String[] listWords = s.replace(" ", "").split(",");
         HashMap<Document, Double> result = new HashMap<Document, Double>();
-        for (Document d: documentsList){
+        for (Document d: docList){
             double relevance = 0.0;
             HashMap<String, Double> TFMap = d.getContingut().getTFMap();
-            for (String word: wordList) {
+            for (String word: listWords) {
                 if (IDF.containsKey(word) && TFMap.containsKey(word)) relevance += IDF.get(word) * TFMap.get(word);
             }
             result.put(d, relevance);

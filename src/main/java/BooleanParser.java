@@ -1,10 +1,17 @@
 import java.util.Arrays;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Queue;
 
 class BooleanParser{
 
+    private String[] expressions;
+
+    private boolean full;
+
     public BooleanParser(){
+        expressions = new String[10];
+        full = false;
     }
 
 
@@ -27,7 +34,59 @@ class BooleanParser{
         expression = preprocess(expression);
         String[] tokens = expression.split(" ");
         tokens = preprocessTokens(tokens);
+        save_expression(expression);
         return parserOrExpression(tokens, d);
+    }
+
+    private void save_expression(String expression){
+        if (hasExpression(expression)) {
+            boolean found = false;
+            for (int i = 9; i > 1; --i) {
+                if(!found) {
+                    if (expressions[i]!=null)
+                        if(expressions[i].equals(expression)) {
+                            found = true;
+                            expressions[i] = expressions[i - 1];
+                        }
+                }
+                else {
+                    expressions[i] = expressions[i - 1];
+                }
+            }
+            expressions[0] = expression;
+        }
+        else {
+            for (int i = 9; i > 0; --i) {
+                expressions[i] = expressions[i - 1];
+            }
+            expressions[0] = expression;
+            if (expressions[9]!= null) full = true;
+        }
+    }
+
+    private Boolean hasExpression(String expression) {
+        for (int i = 0; i < 10; i++)
+            if (expressions[i] != null)
+                if (expressions[i].equals(expression)) return true;
+        return false;
+    }
+
+    public String[] get_recent_searches() {
+        String[] result;
+        if (!full) {
+            ArrayList<String> tempt = new ArrayList<String>();
+            for (int i = 0; i < 10; ++i) {
+                if (expressions[i] != null) {
+                    tempt.add(expressions[i]);
+                }
+            }
+            result = new String[tempt.size()];
+            for (int i = 0; i < tempt.size(); ++i) result[i] = tempt.get(i);
+        }
+        else {
+            result = expressions;
+        }
+        return result;
     }
 
     public Boolean parserOrExpression(String[] tokens, Document d) {
