@@ -120,11 +120,8 @@ public class CtrlPresentacio {
             cd = cd.reset();
             System.gc();
             cd.open(path);
-            System.out.println("disposing");
             mainwindow.dispose();
-            System.out.println("creating");
             mainwindow = new MainWindow(this);
-            System.out.println("succesfully created");
         } catch (IOException E){errorManagement("Error occured at opening.");
         } catch (Exception E){
             errorManagement("Error occured at opening.");
@@ -137,5 +134,12 @@ public class CtrlPresentacio {
     }
 
     public String[] getSearches() {return cd.getSearches();}
+
+    public void reset() {
+        this.cd = cd.reset();
+        System.gc();
+        mainwindow.dispose();
+        mainwindow = new MainWindow(this);
+    }
 
 }

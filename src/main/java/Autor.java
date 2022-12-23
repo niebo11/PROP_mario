@@ -71,4 +71,12 @@ public class Autor {
     public String toString(){
         return name.toString();
     }
+
+    public void updateDocument(String docName, Document newDoc) {
+        for (int i = 0; i < documentList.size(); ++i) {
+            if (documentList.get(i).getTitol().toString().equals(docName)) {
+                documentList.set(i, newDoc);
+            }
+        }
+    }
 }

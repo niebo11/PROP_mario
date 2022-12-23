@@ -5,25 +5,33 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.HashMap;
 
 public class VistaRelevance extends JPanel
 {
     private CtrlPresentacio ctrl;
+    private MainWindow mainWindow;
     private JTextField k;
     private JComboBox autor;
     private JComboBox document;
     private JButton search;
     private GridBagConstraints c;
     private JTable table;
-    public VistaRelevance(CtrlPresentacio ctrl) {
+    private VistaMainDocument documentDialog;
+    private String[][] docs;
+    public VistaRelevance(CtrlPresentacio ctrl, MainWindow mainWindow) {
+        documentDialog = new VistaMainDocument(ctrl);
         this.ctrl = ctrl;
+        this.mainWindow = mainWindow;
         initVistaRelevance();
     }
 
     private void initVistaRelevance(){
         c = new GridBagConstraints();
+        docs = new String[0][];
         setLayout(new GridBagLayout());
         initKTextField();
         initAutorComboBox();
@@ -121,24 +129,7 @@ public class VistaRelevance extends JPanel
                     if (Integer.parseInt(k.getText()) <= 0) {
                         throw new NumberFormatException("nope");
                     } else {
-                        int number_doc = Integer.parseInt(k.getText());
-                        /*try {
-                            if (autor.getSelectedItem() == null || document.getSelectedItem() == null) {
-                                throw new Exception("invalid input");
-                            } else {*/
-                            Document to_search = ctrl.getDocumentFromNameAutor(
-                                    document.getSelectedItem().toString(),
-                                    autor.getSelectedItem().toString()
-                            );
-                            String[][] docs = ctrl.getMostSimilarDocument(
-                                    document.getSelectedItem().toString(),
-                                    autor.getSelectedItem().toString(),
-                                    Integer.parseInt(k.getText()));
-                            updateTableValues(docs);
-                        /*    }
-                        } catch (Exception E) {
-
-                        }*/
+                        computeDocumentList();
                     }
                 } catch (NumberFormatException E) {
                     ctrl.errorManagement("K is not a valid integer.");
@@ -146,6 +137,15 @@ public class VistaRelevance extends JPanel
             }
         });
         this.add(search, c);
+    }
+
+    private void computeDocumentList() {
+        int number_doc = Integer.parseInt(k.getText());
+        docs = ctrl.getMostSimilarDocument(
+                document.getSelectedItem().toString(),
+                autor.getSelectedItem().toString(),
+                number_doc);
+        updateTableValues();
     }
 
     private void initTable() {
@@ -161,8 +161,6 @@ public class VistaRelevance extends JPanel
         table.getTableHeader().setReorderingAllowed(false);
         table.setRowHeight(table.getRowHeight()+9);
         table.setBorder(BorderFactory.createEmptyBorder(1,1,1,1));
-        table.getColumnModel().getColumn(1).setCellRenderer(new MultiLineTableCellRenderer(ctrl));
-        table.getColumnModel().getColumn(1).setCellEditor(new MultiLineTableCellRenderer(ctrl));
         table.setShowGrid(true);
         panel.setBorder(BorderFactory.createLineBorder(Color.BLACK, 1));
 
@@ -177,7 +175,49 @@ public class VistaRelevance extends JPanel
         c.insets = new Insets(6, 6, 6, 6);
         this.add(panel, c);
         panel.setVisible(true);
-        updateTable();
+        table.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent e) {
+                mayShowPopup(e);
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                mayShowPopup(e);
+            }
+
+            @Override
+            public void mouseClicked(MouseEvent e){
+                if (e.getClickCount() == 2 && e.getButton() == MouseEvent.BUTTON1) {
+                    JTable source  = (JTable) e.getSource();
+                    VistaRelevance vr = (VistaRelevance) source.getParent().getParent();
+                    int row = source.rowAtPoint( e.getPoint() );
+                    int column = source.columnAtPoint( e.getPoint() );
+
+                    if (!source.isRowSelected(row))
+                        source.changeSelection(row, column, false, false);
+                    if(row != -1) {
+                        String name = (String) table.getValueAt(row, 0).toString();
+                        String autor = (String) table.getValueAt(row, 1).toString();
+                        if (!documentDialog.isActive()){
+                            documentDialog = new VistaMainDocument(ctrl);
+                            documentDialog.addWindowListener(new java.awt.event.WindowAdapter() {
+                                @Override
+                                public void windowClosed(java.awt.event.WindowEvent windowEvent) {
+                                    vr.updateAll();
+                                }
+                            });
+                            documentDialog.setDocument(name, autor);
+                        }
+                    }
+                }
+            }
+
+            private void mayShowPopup(MouseEvent e) {
+            }
+
+        });
+        updateTableValues();
     }
 
     public class MyTableModel extends DefaultTableModel {
@@ -197,7 +237,7 @@ public class VistaRelevance extends JPanel
         updateRowHeights();
     }
 
-    public void updateTableValues(String[][] docs) {
+    public void updateTableValues() {
         DefaultTableModel model = (DefaultTableModel) table.getModel();
         model.setRowCount(0);
         for (int i = 0; i < docs.length; i++) {
@@ -205,6 +245,11 @@ public class VistaRelevance extends JPanel
         }
         table.setModel(model);
         updateRowHeights();
+    }
+
+    public void updateAll() {
+        computeDocumentList();
+        mainWindow.updateAutors(true);
     }
 
     private void updateRowHeights() {

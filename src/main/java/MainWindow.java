@@ -23,7 +23,7 @@ public class MainWindow extends JFrame implements LangListener, ActionListener{
     private JPanel panelContent = new JPanel();
     private JPanel panelButtons = new JPanel();
     private JTabbedPane tabbedPanel;
-    private JMenuItem open, save;
+    private JMenuItem open, save, reset;
 
     // Menus
     private JMenuBar menuBarVista = new JMenuBar();
@@ -41,8 +41,8 @@ public class MainWindow extends JFrame implements LangListener, ActionListener{
         this.ctrl = ctrl;
         tableLlibreria = new VistaLlibreria(this.ctrl, this);
         tableAutors = new VistaAutors(this.ctrl);
-        vistaRelevance = new VistaRelevance(this.ctrl);
-        vistaRelevanceWords = new VistaRelevanceWords(this.ctrl);
+        vistaRelevance = new VistaRelevance(this.ctrl, this);
+        vistaRelevanceWords = new VistaRelevanceWords(this.ctrl, this);
         initializeComponents();
         assignListenersComponents();
         hacerVisible();
@@ -59,13 +59,17 @@ public class MainWindow extends JFrame implements LangListener, ActionListener{
     }
 
     public void updateAutors(Boolean required) {
-        tableAutors.updateTable(false);
+        tableAutors.updateTable(required);
         vistaRelevance.updateAutorList();
+        tableAutors.repaint();
+        tableLlibreria.repaint();
     }
 
     public void updateLlibreria(Boolean required) {
-        tableLlibreria.updateTable(false);
+        tableLlibreria.updateTable(required);
         vistaRelevance.updateAutorList();
+        tableAutors.repaint();
+        tableLlibreria.repaint();
     }
 
     public void desactivar() {
@@ -122,6 +126,9 @@ public class MainWindow extends JFrame implements LangListener, ActionListener{
 
 
     private void initMenuBarVista() {
+        reset = new JMenuItem("New");
+        reset.addActionListener(this);
+        reset.setActionCommand("new");
         open = new JMenuItem("Open");
         open.addActionListener(this);
         open.setActionCommand("open");
@@ -129,9 +136,10 @@ public class MainWindow extends JFrame implements LangListener, ActionListener{
         save.addActionListener(this);
         save.setActionCommand("save");
 
-        menuFile.add(menuItemQuit);
+        menuFile.add(reset);
         menuFile.add(open);
         menuFile.add(save);
+        menuFile.add(menuItemQuit);
         menuOptions.add(menuItemPreferences);
         menuBarVista.add(menuFile);
         menuBarVista.add(menuOptions);
@@ -184,7 +192,7 @@ public class MainWindow extends JFrame implements LangListener, ActionListener{
             }
         }
         else if (e.getActionCommand().equals("open")) {
-            int n = JOptionPane.showOptionDialog(null, "Do you want to save before opening new?", "Save",
+            int n = JOptionPane.showOptionDialog(null, "Do you want to save before opening file?", "Save",
                     JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE,null, null,JOptionPane.YES_OPTION);
             if (n == JOptionPane.YES_OPTION){
                 actionPerformed(new ActionEvent(e.getSource(), new Random().nextInt(), "save"));
@@ -207,6 +215,16 @@ public class MainWindow extends JFrame implements LangListener, ActionListener{
                 ctrl.errorManagement("Error opening");
                 ex.printStackTrace();
             }
+        }
+        else if (e.getActionCommand().equals("new")) {
+            int n = JOptionPane.showOptionDialog(null, "Do you want to save before opening new?", "Save",
+                    JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE,null, null,JOptionPane.YES_OPTION);
+            if (n == JOptionPane.CANCEL_OPTION) return;
+            if (n == JOptionPane.YES_OPTION){
+                actionPerformed(new ActionEvent(e.getSource(), new Random().nextInt(), "save"));
+            }
+            if(n == -1) return;
+            ctrl.reset();
         }
     }
 }

@@ -12,9 +12,12 @@ import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashSet;
+import java.util.Set;
 
 public class CtrlPersistencia {
     private static final Path AUTOSAVE_FILE = Paths.get("autosave.lm");
+    private static final Path STOP_WORDS = Paths.get("StopWords");
 
     public static void save(String path, String[] lb, String[] a) throws Exception {
         deleteAutosaved();
@@ -102,6 +105,15 @@ public class CtrlPersistencia {
         s[2] = br.readLine();
         s[3] = br.readLine();
         return s;
+    }
+
+    public static Set<String> openStopWords() throws Exception {
+        BufferedReader br = open2Read(STOP_WORDS.toString());
+        Set<String> result = new HashSet<String>();
+        for(String line = br.readLine(); line!= null; line= br.readLine()){
+            result.add(line);
+        }
+        return result;
     }
 
     public static boolean existsAutosaved() {

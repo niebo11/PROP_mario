@@ -5,6 +5,8 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 
 public class VistaRelevanceWords extends JPanel
@@ -16,13 +18,19 @@ public class VistaRelevanceWords extends JPanel
     private JButton search;
     private GridBagConstraints c;
     private JTable table;
-    public VistaRelevanceWords(CtrlPresentacio ctrl) {
+    private VistaMainDocument documentDialog;
+    private String[][] docs;
+    private MainWindow mw;
+    public VistaRelevanceWords(CtrlPresentacio ctrl, MainWindow mw) {
+        documentDialog = new VistaMainDocument(ctrl);
+        this.mw = mw;
         this.ctrl = ctrl;
         initVistaRelevance();
     }
 
     private void initVistaRelevance(){
         c = new GridBagConstraints();
+        docs = new String[0][];
         setLayout(new GridBagLayout());
         initKTextField();
         initAutorComboBox();
@@ -69,10 +77,7 @@ public class VistaRelevanceWords extends JPanel
                     if (Integer.parseInt(k.getText()) <= 0) {
                         throw new NumberFormatException("nope");
                     } else {
-                        int number_doc = Integer.parseInt(k.getText());
-                        String words_to_search = words.getText();
-                        String[][] new_values = ctrl.getPwords(words_to_search, number_doc);
-                        updateTableValues(new_values);
+                        computeDocumentList();
                     }
                 } catch (NumberFormatException E) {
                     ctrl.errorManagement("K is not a valid integer.");
@@ -80,6 +85,13 @@ public class VistaRelevanceWords extends JPanel
             }
         });
         this.add(search, c);
+    }
+
+    private void computeDocumentList(){
+        int number_doc = Integer.parseInt(k.getText());
+        String words_to_search = words.getText();
+        docs = ctrl.getPwords(words_to_search, number_doc);
+        updateTableValues();
     }
 
     private void initTable() {
@@ -95,8 +107,6 @@ public class VistaRelevanceWords extends JPanel
         table.getTableHeader().setReorderingAllowed(false);
         table.setRowHeight(table.getRowHeight()+9);
         table.setBorder(BorderFactory.createEmptyBorder(1,1,1,1));
-        table.getColumnModel().getColumn(1).setCellRenderer(new MultiLineTableCellRenderer(ctrl));
-        table.getColumnModel().getColumn(1).setCellEditor(new MultiLineTableCellRenderer(ctrl));
         table.setShowGrid(true);
         panel.setBorder(BorderFactory.createLineBorder(Color.BLACK, 1));
 
@@ -111,7 +121,49 @@ public class VistaRelevanceWords extends JPanel
         c.insets = new Insets(6, 6, 6, 6);
         this.add(panel, c);
         panel.setVisible(true);
-        updateTable();
+        table.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent e) {
+                mayShowPopup(e);
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                mayShowPopup(e);
+            }
+
+            @Override
+            public void mouseClicked(MouseEvent e){
+                if (e.getClickCount() == 2 && e.getButton() == MouseEvent.BUTTON1) {
+                    JTable source  = (JTable) e.getSource();
+                    VistaRelevanceWords vrw = (VistaRelevanceWords) source.getParent().getParent();
+                    int row = source.rowAtPoint( e.getPoint() );
+                    int column = source.columnAtPoint( e.getPoint() );
+
+                    if (!source.isRowSelected(row))
+                        source.changeSelection(row, column, false, false);
+                    if(row != -1) {
+                        String name = (String) table.getValueAt(row, 0).toString();
+                        String autor = (String) table.getValueAt(row, 1).toString();
+                        if (!documentDialog.isActive()){
+                            documentDialog = new VistaMainDocument(ctrl);
+                            documentDialog.addWindowListener(new java.awt.event.WindowAdapter() {
+                                @Override
+                                public void windowClosed(java.awt.event.WindowEvent windowEvent) {
+                                    vrw.updateAll();
+                                }
+                            });
+                            documentDialog.setDocument(name, autor);
+                        }
+                    }
+                }
+            }
+
+            private void mayShowPopup(MouseEvent e) {
+            }
+
+        });
+        updateTableValues();
     }
 
     public class MyTableModel extends DefaultTableModel {
@@ -122,16 +174,7 @@ public class VistaRelevanceWords extends JPanel
         public boolean isCellEditable(int row, int column) { return false;}
     }
 
-    public void updateTable(){
-        DefaultTableModel model = (DefaultTableModel) table.getModel();
-        model.setRowCount(0);
-        Object[][] auxi = ctrl.getDocumentosData();
-        for (Object[] anAuxi : auxi) { model.addRow(anAuxi); }
-        table.setModel(model);
-        updateRowHeights();
-    }
-
-    public void updateTableValues(String[][] docs) {
+    public void updateTableValues() {
         DefaultTableModel model = (DefaultTableModel) table.getModel();
         model.setRowCount(0);
         for (int i = 0; i < docs.length; i++) {
@@ -139,6 +182,11 @@ public class VistaRelevanceWords extends JPanel
         }
         table.setModel(model);
         updateRowHeights();
+    }
+
+    public void updateAll() {
+        computeDocumentList();
+        mw.updateAutors(true);
     }
 
     private void updateRowHeights() {

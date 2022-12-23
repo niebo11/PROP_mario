@@ -29,9 +29,11 @@ public class CtrlDomini {
     private BooleanParser booleanParser;
 
     Timer autosavetimer;
-    public CtrlDomini(){
+    public CtrlDomini() {
         lb = new Llibreria();
-        c = new Algorithm();
+        try {
+            c = new Algorithm(CtrlPersistencia.openStopWords());
+        } catch (Exception e) {}
         autosavetimer = new Timer();
         booleanParser = new BooleanParser();
         if (CtrlPersistencia.existsAutosaved()) {
@@ -140,11 +142,14 @@ public class CtrlDomini {
     }
 
     public void changeTitolDocument(String titol, String autor, String newTitol) {
+        System.out.println(titol);
+        System.out.println(newTitol);
         Document to_change = getDocumentFromNameAutor(titol, autor);
-        lb.changeTitolDocument(
+        to_change = lb.changeTitolDocument(
                 to_change,
                 new Frase(newTitol)
         );
+        lb.updateAutorDocuments(autor, titol, to_change);
     }
 
     public String[][] getDocumentsData() {
@@ -211,7 +216,12 @@ public class CtrlDomini {
     }
 
     public String[][] getPwords(String words, Integer k) {
-        HashMap<Document, Double> relevance = c.getDocumentsByWords(lb.getDocuments(), words, k);
+        Document aux = new Document(
+                new Frase("aux"),
+                new Frase("aux"),
+                new Contingut(words.replace(",", " "))
+        );
+        HashMap<Document, Double> relevance = getMostSimilarDocuments(aux, k);
         return translateHashMap(relevance);
     }
 

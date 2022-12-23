@@ -1,4 +1,5 @@
 import javax.print.Doc;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Set;
@@ -11,10 +12,13 @@ class Algorithm{
 
     private Integer totalWords;
 
+    private Set<String> stopWords;
+
     private HashMap<String, Double> IDF;
 
-    public Algorithm() {
+    public Algorithm(Set<String> stopWords) {
         totalWords = 0;
+        this.stopWords = stopWords;
         IDF = new HashMap<String, Double>();
     }
     public void updateIDF(ArrayList<Document> documentsList) {
@@ -23,8 +27,10 @@ class Algorithm{
             HashMap<String, Integer> temptMap = d.getContingut().getWordMap();
             Set<String> temptStringList = temptMap.keySet();
             for (String key: temptStringList) {
-                if (temptCountMap.containsKey(key)) temptCountMap.put(key, temptCountMap.get(key) + 1);
-                else temptCountMap.put(key, 1);
+                if (!stopWords.contains(key)) {
+                    if (temptCountMap.containsKey(key)) temptCountMap.put(key, temptCountMap.get(key) + 1);
+                    else temptCountMap.put(key, 1);
+                }
             }
         }
         int totalDocuments = documentsList.size();
@@ -37,14 +43,15 @@ class Algorithm{
         HashMap<String, Double> result = new HashMap<String, Double>();
         HashMap<String, Double> TFMap = d.getContingut().getTFMap();
         for (HashMap.Entry<String, Double> entry: TFMap.entrySet()) {
-            result.put(entry.getKey(), entry.getValue()*IDF.get(entry.getKey()));
+            if (!stopWords.contains(entry.getKey())) {
+                result.put(entry.getKey(), entry.getValue() * IDF.get(entry.getKey()));
+            }
         }
         return result;
     }
 
     public Double computeCosineSimilarity(HashMap<String, Double> TF_IDF, Document d2) {
         HashMap<String, Double> TF_IDF_2 = computeWordScore(d2);
-        System.out.println(TF_IDF);
         Double dotProductResult = dotProduct(TF_IDF, TF_IDF_2);
         Double d1AbsoluteValue = absoluteValue(TF_IDF);
         Double d2AbsoluteValue = absoluteValue(TF_IDF_2);
@@ -57,9 +64,10 @@ class Algorithm{
     public Double dotProduct(HashMap<String, Double> x1, HashMap<String, Double> x2) {
         Double result = 0.0;
         for (HashMap.Entry<String, Double> entry: x1.entrySet()) {
-            if (x2.containsKey(entry.getKey())) {
-                result += entry.getValue() * x2.get(entry.getKey());
-            }
+            if(!stopWords.contains(entry.getKey()))
+                if (x2.containsKey(entry.getKey())) {
+                    result += entry.getValue() * x2.get(entry.getKey());
+                }
         }
         return result;
     }
@@ -92,21 +100,6 @@ class Algorithm{
             if (k == count) break;
         }
         return sortedMap;
-    }
-
-    public HashMap<Document, Double> getDocumentsByWords(ArrayList<Document> docList, String s, int k){
-        String[] listWords = s.replace(" ", "").split(",");
-        HashMap<Document, Double> result = new HashMap<Document, Double>();
-        for (Document d: docList){
-            double relevance = 0.0;
-            HashMap<String, Double> TFMap = d.getContingut().getTFMap();
-            for (String word: listWords) {
-                if (IDF.containsKey(word) && TFMap.containsKey(word)) relevance += IDF.get(word) * TFMap.get(word);
-            }
-            result.put(d, relevance);
-        }
-
-        return getKHigherScores(result, k);
     }
 
     public Integer getTotalWords() {

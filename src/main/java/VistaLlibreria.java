@@ -82,8 +82,6 @@ public class VistaLlibreria extends JPanel implements LangListener{
         table.getTableHeader().setReorderingAllowed(false);
         table.setRowHeight(table.getRowHeight()+9);
         table.setBorder(BorderFactory.createEmptyBorder(1,1,1,1));
-        table.getColumnModel().getColumn(1).setCellRenderer(new MultiLineTableCellRenderer(ctrl));
-        table.getColumnModel().getColumn(1).setCellEditor(new MultiLineTableCellRenderer(ctrl));
         table.setShowGrid(true);
         this.setBorder(BorderFactory.createLineBorder(Color.BLACK, 1));
 

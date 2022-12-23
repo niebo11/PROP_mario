@@ -74,11 +74,12 @@ public class Llibreria {
         updateAutors(autor);
     }
 
-    public void changeTitolDocument(Document d, Frase name) {
+    public Document changeTitolDocument(Document d, Frase name) {
         if (!hasDocument(d)) {
             throw new java.lang.IllegalArgumentException("El document no existeix a la llibreria");
         }
         d.setTitol(name);
+        return d;
     }
 
     public Document getDocumentFromNameAutor(String name, String autor) {
@@ -90,6 +91,16 @@ public class Llibreria {
             if (fake.equals(d2)) return d2;
         }
         return null;
+    }
+
+    public void updateAutorDocuments(String autor, String oldDocument, Document newDocument) {
+        for (int i = 0; i < autors.size(); ++i) {
+            if(autors.get(i).toString().equals(autor)) {
+                Autor aux = autors.get(i);
+                aux.updateDocument(oldDocument, newDocument);
+                autors.set(i, aux);
+            }
+        }
     }
 
     public void changeAutorDocument(Document d, Frase name) {
